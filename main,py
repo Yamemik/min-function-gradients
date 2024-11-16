@@ -1,0 +1,59 @@
+from math import sqrt, pow
+import numpy as np
+
+
+def gradient_descent(starting_point: list, learning_rate=0.1, tolerance=1e-4, max_iterations=1000) -> list:
+    """
+    Реализация метода градиентного спуска с постоянным шагом
+    """
+    x_current = starting_point
+    
+    for i in range(max_iterations):
+        grad = gradient(x_current[0], x_current[1])  # Вычисляем градиент
+        x_next = x_current - learning_rate * grad  # Обновляем текущее значение
+        
+        # Проверяем сходимость
+        if norm_grad(grad) < tolerance:
+            print(f"Сошлось за {i} итераций.")
+            return x_next
+        
+        x_current = x_next  # Переходим к следующему значению
+    
+    print("Максимальное количество итераций превышено.")
+    return x_current
+
+
+def fx(x1: float, x2: float) -> float:
+    """
+    Определяет целевую функцию
+    """
+    return 2 * x1*x1 - x1 * x2 + 0.5 * x2*x2 +3 * x1 + x2
+
+
+def norm_grad(grad: list) -> float:
+    """
+    Возвращает норму градиента
+    """
+    return sqrt(pow(grad[0], 2) + pow(grad[1], 2))
+
+
+def gradient(x1: float, x2: float) -> list:
+    """
+    Возвращает градиент функции f(x1,x2)
+    """
+    df_dx1 = 4 * x1 - x2 +3
+    df_dx2 = -x1 + x2 + 1
+    return np.array([df_dx1, df_dx2])
+
+
+if __name__ == "__main__":
+    # Начальная точка
+    starting_point = [0, 0]
+
+    # 1
+    x0 = gradient_descent(starting_point)
+    print(f'{x0} - точка минимума')
+    print(f'{fx(x0[0],x0[1])} - значение функции в точке х0')
+
+    # 2
+    
