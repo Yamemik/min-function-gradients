@@ -2,7 +2,7 @@ from math import sqrt, pow
 import numpy as np
 
 
-def gradient_descent(starting_point: list, learning_rate=0.1, tolerance=1e-4, max_iterations=1000) -> list:
+def gradient_descent(starting_point: list, learning_rate=0.1, tolerance=1e-4, max_iterations=200) -> list:
     """
     Реализация метода градиентного спуска с постоянным шагом
     """
@@ -18,6 +18,59 @@ def gradient_descent(starting_point: list, learning_rate=0.1, tolerance=1e-4, ma
             return x_next
         
         x_current = x_next  # Переходим к следующему значению
+    
+    print("Максимальное количество итераций превышено.")
+    return x_current
+
+def gradient_descent_variable_step(starting_point: list, initial_learning_rate=0.5, tolerance=1e-4, max_iterations=100) -> list:
+    """
+    Реализация метода градиентного спуска с переменным шагом
+    """
+    x_current = starting_point
+    learning_rate = initial_learning_rate
+    
+    for i in range(max_iterations):
+        grad = gradient(x_current[0], x_current[1])  # Вычисляем градиент
+        x_next = x_current - learning_rate * grad  # Обновляем текущее значение
+        
+        # Проверяем сходимость
+        if norm_grad(grad) < tolerance:
+            print(f"Сошлось за {i} итераций.")
+            return x_next
+        
+        # Проверка, уменьшилась ли функция
+        if fx(x_next[0], x_next[1]) < fx(x_current[0], x_current[1]):
+            x_current = x_next  # Если уменьшилось, принимаем новую точку
+        else:
+            learning_rate /= 2  # Уменьшаем шаг
+    
+    print("Максимальное количество итераций превышено.")
+    return x_current
+
+def gradient_descent_variable_step_with_golden_section(starting_point: list, tolerance=1e-4, max_iterations=100) -> list:
+    """
+    Реализация метода наисскорейшего спуска с золотым сечением
+    """
+    x_current = starting_point
+    
+    for i in range(max_iterations):
+        grad = gradient(x_current[0], x_current[1])  # Вычисляем градиент
+        direction = -grad  # Направление спуска
+
+        # Находим оптимальный шаг с помощью метода золотого сечения
+        optimal_step = golden_section_search(lambda alpha: fx(x_current[0] + alpha * direction[0],
+                                                              x_current[1] + alpha * direction[1]),
+                                              x_current,
+                                              direction)
+        
+        x_next = x_current + optimal_step * direction
+
+        # Проверяем сходимость
+        if norm_grad(grad) < tolerance:
+            print(f"Сошлось за {i} итераций.")
+            return x_next
+        
+        x_current = x_next  # Обновляем текущее значение
     
     print("Максимальное количество итераций превышено.")
     return x_current
@@ -46,14 +99,48 @@ def gradient(x1: float, x2: float) -> list:
     return np.array([df_dx1, df_dx2])
 
 
+def golden_section_search(func, x0, d, a=-1, b=1, tol=1e-4):
+    """
+    Реализация метода золотого сечения для нахождения шага
+    """
+    phi = (1 + np.sqrt(5)) / 2  # Золотое сечение
+    resphi = 2 - phi
+
+    # Начальные точки
+    x1 = a + resphi * (b - a)
+    x2 = b - resphi * (b - a)
+
+    while np.abs(b - a) > tol:
+        if func(x1) < func(x2):
+            b = x2
+        else:
+            a = x1
+        
+        # Обновление x1 и x2
+        x1 = a + resphi * (b - a)
+        x2 = b - resphi * (b - a)
+
+    return (a + b) / 2  # Оптимальный шаг
+
+
 if __name__ == "__main__":
     # Начальная точка
     starting_point = [0, 0]
 
     # 1
+    print("#1")
     x0 = gradient_descent(starting_point)
     print(f'{x0} - точка минимума')
     print(f'{fx(x0[0],x0[1])} - значение функции в точке х0')
 
     # 2
-    
+    print("#2")
+    x0 = gradient_descent_variable_step(starting_point)
+    print(f'{x0} - точка минимума')
+    print(f'{fx(x0[0],x0[1])} - значение функции в точке х0')
+
+    # 3
+    print("#3")
+    x0 = gradient_descent_variable_step_with_golden_section(starting_point)
+    print(f'{x0} - точка минимума')
+    print(f'{fx(x0[0],x0[1])} - значение функции в точке х0')
