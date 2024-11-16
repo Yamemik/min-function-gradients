@@ -1,4 +1,4 @@
-﻿# Минимизация функции (tg bot)
+﻿# Минимизация функции
 
 ![Static Badge](https://img.shields.io/badge/Yamemik-gradients)
 ![GitHub top language](https://img.shields.io/github/languages/top/Yamemik/min-function-gradients)
