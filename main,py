@@ -47,6 +47,7 @@ def gradient_descent_variable_step(starting_point: list, initial_learning_rate=0
     print("Максимальное количество итераций превышено.")
     return x_current
 
+
 def gradient_descent_variable_step_with_golden_section(starting_point: list, tolerance=1e-4, max_iterations=100) -> list:
     """
     Реализация метода наисскорейшего спуска с золотым сечением
@@ -71,6 +72,73 @@ def gradient_descent_variable_step_with_golden_section(starting_point: list, tol
             return x_next
         
         x_current = x_next  # Обновляем текущее значение
+    
+    print("Максимальное количество итераций превышено.")
+    return x_current
+
+
+def conjugate_gradient(A, b, starting_point, tolerance=1e-4, max_iterations=100) -> list:
+    """
+    Метод сопряженных градиентов
+    """
+    x_current = np.array(starting_point)
+    g_current = gradient(x_current[0], x_current[1])
+
+    H = np.array([[7,2],[2,2]])
+    
+    # Инициализация направления
+    p = g_current.copy()
+    
+    for k in range(max_iterations):
+        # Найти величину шага
+        Ap = np.dot(A, p)  # A * p
+        alpha_k = g_current / np.dot(p, Ap)
+
+        # Обновляем текущее значение
+        x_next = x_current - alpha_k * p
+        
+        # Получаем новый градиент
+        g_next = gradient(x_next[0], x_next[1])
+
+        # Проверка сходимости
+        if norm_grad(g_next) < tolerance:
+            print(f"Сошлось за {k} итераций.")
+            return x_next
+        
+        # Определяем новое направление
+        beta_k = pow(norm_grad(g_next), 2) / pow(norm_grad(g_current), 2)
+        p = g_next + beta_k * p
+        
+        # Обновляем текущее значение и градиент
+        x_current = x_next
+        g_current = g_next
+
+    print("Максимальное количество итераций превышено.")
+    return x_current
+
+
+def newton_method(starting_point, tolerance=1e-4, max_iterations=100):
+    """
+    Реализация метода Ньютона
+    """
+    x_current = np.array(starting_point)
+    
+    for i in range(max_iterations):
+        grad = gradient(x_current[0], x_current[1])  # Вычисляем градиент
+        H = np.array([[7,2],[2,2]]) # Матрица Гессе
+        
+        if np.linalg.det(H) == 0:
+            raise ValueError("Гессиан вырожден. Метод Ньютона не может быть применен.")
+        
+        # Обновляем значение x
+        x_next = x_current - np.linalg.inv(H) @ grad
+        
+        # Проверяем сходимость
+        if np.linalg.norm(grad) < tolerance:
+            print(f"Сошлось за {i} итераций.")
+            return x_next
+        
+        x_current = x_next  # Переходим к следующему значению
     
     print("Максимальное количество итераций превышено.")
     return x_current
@@ -142,5 +210,19 @@ if __name__ == "__main__":
     # 3
     print("#3")
     x0 = gradient_descent_variable_step_with_golden_section(starting_point)
+    print(f'{x0} - точка минимума')
+    print(f'{fx(x0[0],x0[1])} - значение функции в точке х0')
+
+    # 4
+    print("#4")
+    A = np.array([[4, -1], [-1, 1]])  # симметричная положительно определенная матрица
+    b = np.array([3, 1])  # вектор
+    x0 = conjugate_gradient(A, b, starting_point)
+    print(f'{x0} - точка минимума')
+    print(f'{fx(x0[0],x0[1])} - значение функции в точке х0')
+
+    # 5
+    print("#5")
+    x0 = newton_method(starting_point)
     print(f'{x0} - точка минимума')
     print(f'{fx(x0[0],x0[1])} - значение функции в точке х0')
