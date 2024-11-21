@@ -78,44 +78,31 @@ def gradient_descent_variable_step_with_golden_section(starting_point: list, tol
     return x_current
 
 
-def conjugate_gradient(A, b, starting_point, tolerance=1e-4, max_iterations=100) -> list:
-    """
-    Метод сопряженных градиентов
-    """
-    x_current = np.array(starting_point)
-    g_current = gradient(x_current[0], x_current[1])
-
-    H = np.array([[7,2],[2,2]])
+# Метод сопряженных градиентов
+def conjugate_gradient(A, b, x0, tolerance=1e-4, max_iterations=100):
+    x = x0
+    r = gradient(x[0], x[1])  # начальный градиент
+    p = -r  # начальное направление
+    rsold = np.dot(r, r)  # норма градиента
     
-    # Инициализация направления
-    p = g_current.copy()
-    
-    for k in range(max_iterations):
-        # Найти величину шага
+    for i in range(max_iterations):
         Ap = np.dot(A, p)  # A * p
-        alpha_k = g_current / np.dot(p, Ap)
-
-        # Обновляем текущее значение
-        x_next = x_current - alpha_k * p
+        alpha = rsold / np.dot(p, Ap)  # вычисляем шаг
         
-        # Получаем новый градиент
-        g_next = gradient(x_next[0], x_next[1])
-
-        # Проверка сходимости
-        if norm_grad(g_next) < tolerance:
-            print(f"Сошлось за {k} итераций.")
-            return x_next
+        x = x + alpha * p  # обновляем x
+        r = r + alpha * Ap  # обновляем градиент
         
-        # Определяем новое направление
-        beta_k = pow(norm_grad(g_next), 2) / pow(norm_grad(g_current), 2)
-        p = g_next + beta_k * p
+        rsnew = np.dot(r, r)  # новая норма градиента
         
-        # Обновляем текущее значение и градиент
-        x_current = x_next
-        g_current = g_next
-
+        if np.sqrt(rsnew) < tolerance:  # проверка сходимости
+            print(f"Сошлось за {i+1} итераций.")
+            return x
+        
+        p = -r + (rsnew / rsold) * p  # обновляем направление
+        rsold = rsnew  # сохраняем старую норму
+    
     print("Максимальное количество итераций превышено.")
-    return x_current
+    return x
 
 
 def newton_method(starting_point, tolerance=1e-4, max_iterations=100):
@@ -216,8 +203,8 @@ if __name__ == "__main__":
 
     # 4
     print("#4")
-    A = np.array([[4, -1], [-1, 1]])  # симметричная положительно определенная матрица
-    b = np.array([3, 1])  # вектор
+    A = np.array([[4, -1], [-1, 1]]) 
+    b = np.array([3, 1]) 
     x0 = conjugate_gradient(A, b, starting_point)
     print(f'{x0} - точка минимума')
     print(f'{fx(x0[0],x0[1])} - значение функции в точке х0')
