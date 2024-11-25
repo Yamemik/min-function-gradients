@@ -78,8 +78,10 @@ def gradient_descent_variable_step_with_golden_section(starting_point: list, tol
     return x_current
 
 
-# Метод сопряженных градиентов
 def conjugate_gradient(A, b, x0, tolerance=1e-4, max_iterations=100):
+    """
+    Метод сопряженных градиентов
+    """
     x = x0
     r = gradient(x[0], x[1])  # начальный градиент
     p = -r  # начальное направление
