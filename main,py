@@ -60,10 +60,9 @@ def gradient_descent_variable_step_with_golden_section(starting_point: list, tol
         direction = -grad  # Направление спуска
 
         # Находим оптимальный шаг с помощью метода золотого сечения
-        optimal_step = golden_section_search(lambda alpha: fx(x_current[0] + alpha * direction[0],
+        optimal_step = fibonacci_search(lambda alpha: fx(x_current[0] + alpha * direction[0],
                                                               x_current[1] + alpha * direction[1]),
-                                              x_current,
-                                              direction)
+                                              x_current[0], x_current[1])
         
         x_next = x_current + optimal_step * direction
 
@@ -161,7 +160,7 @@ def golden_section_search(func, x0, d, a=-1, b=1, tol=1e-4):
     """
     Реализация метода золотого сечения для нахождения шага
     """
-    phi = (1 + np.sqrt(5)) / 2  # Золотое сечение
+    phi = (1 + sqrt(5)) / 2  # Золотое сечение
     resphi = 2 - phi
 
     # Начальные точки
@@ -179,6 +178,35 @@ def golden_section_search(func, x0, d, a=-1, b=1, tol=1e-4):
         x2 = b - resphi * (b - a)
 
     return (a + b) / 2  # Оптимальный шаг
+
+def fibonacci(n: int):
+    """Возвращает n-е число Фибоначчи."""
+    fib = [0, 1]
+    for i in range(2, n + 1):
+        fib.append(fib[-1] + fib[-2])
+    return fib
+
+def fibonacci_search(func, a, b, tol=1e-5):
+    """Поиск минимума функции func на интервале [a, b] методом Фибоначчи."""
+    if b < a:
+        a, b = b, a
+
+    n = 0
+    fib = fibonacci(30)  # Генерируем первые 30 чисел Фибоначчи
+    while fib[n] < (b - a) / tol:
+        n += 1
+
+    for i in range(n - 1):
+        x1 = a + fib[n - i - 2] / fib[n - i] * (b - a)
+        x2 = a + fib[n - i - 1] / fib[n - i] * (b - a)
+
+        if func(x1) < func(x2):
+            b = x2
+        else:
+            a = x1
+
+    return (a + b) / 2
+
 
 
 if __name__ == "__main__":
